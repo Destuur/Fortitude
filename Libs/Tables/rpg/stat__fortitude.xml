@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<database xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="barbora" xsi:noNamespaceSchemaLocation="../database.xsd">
+	<stats version="1">
+		<stat stat_id="5" stat_name="fortitude" ui_desc_string_name="ui_stat_fortitude_desc" ui_levelup_string_name="ui_stat_fortitude_levelup" ui_string_name="ui_stat_fortitude" />
+		<stat stat_id="6" stat_name="fortitude" ui_desc_string_name="ui_stat_fortitude_desc" ui_levelup_string_name="ui_stat_fortitude_levelup" ui_string_name="ui_stat_fortitude" />
+		<stat stat_id="7" stat_name="fortitude" ui_desc_string_name="ui_stat_fortitude_desc" ui_levelup_string_name="ui_stat_fortitude_levelup" ui_string_name="ui_stat_fortitude" />
+		<stat stat_id="8" stat_name="fortitude" ui_desc_string_name="ui_stat_fortitude_desc" ui_levelup_string_name="ui_stat_fortitude_levelup" ui_string_name="ui_stat_fortitude" />
+		<stat stat_id="10" stat_name="fortitude" ui_desc_string_name="ui_stat_fortitude_desc" ui_levelup_string_name="ui_stat_fortitude_levelup" ui_string_name="ui_stat_fortitude" />
+	</stats>
+</database>

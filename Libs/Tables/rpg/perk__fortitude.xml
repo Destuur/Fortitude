@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<database xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="barbora" xsi:noNamespaceSchemaLocation="../database.xsd">
+	<perks version="1">
+		<perk autolearnable="false" exclude_in_game_mode="1" icon_id="hardcore_weak_constitution" perk_id="93404e3b-4d26-4e98-8dfe-166773094cb9" perk_name="hardcore_weak_constitution" perk_ui_desc="perk_hardcore_weak_constitution_desc" perk_ui_lore_desc="perk_hardcore_weak_constitution_lore_desc" perk_ui_name="perk_hardcore_weak_constitution_name" visibility="1" />
+	</perks>
+</database>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<Definitions>
+	<Types>
+		<Type TypeName="wh::rpgmodule::SoulState" TypeClass="Enumeration" IsEditable="true">
+			<Enumeration Name="health" />
+			<Enumeration Name="stamina" />
+			<Enumeration Name="exhaust" />
+			<Enumeration Name="hunger" />
+			<Enumeration Name="karma" />
+			<Enumeration Name="fatigue" />
+			<Enumeration Name="alcoholism" />
+		</Type>
+	</Types>
+</Definitions>

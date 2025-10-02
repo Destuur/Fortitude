@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<database xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="barbora" xsi:noNamespaceSchemaLocation="item.xsd">
+	<ItemClasses version="8">
+		<Armor DefenseStab="0" DefenseSlash="0" DefenseSmash="0" StrReq="0" Noise="0" MaxStatus="16" Visibility="1" Conspicuousness="0" Charisma="0" IsBreakable="true" RPGBuffWeight="0.4" SocialClassId="60" WealthLevel="10" MaxQuality="1" UiSound="ui_inv_item_horseshoe" Clothing="HorseShoe" IconId="horseshoeMilitary" UIInfo="ui_in_horseshoeMilitary" UIName="ui_nm_horseshoeMilitary" Model="manmade/task_specific_props/metal_industry/smithing/horseshoe.cgf" Weight="0.5" Price="400" FadeCoef="1" VisibilityCoef="4.472136" Id="0faf833f-8e88-40a0-87b8-2669c0e64c03" Name="horseshoeMilitary" />
+	</ItemClasses>
+</database>
