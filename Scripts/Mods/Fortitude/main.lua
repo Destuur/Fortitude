@@ -1,17 +1,19 @@
 --- @class KCDUtils*mod
 Fortitude = Fortitude or {}
-
 --- @type KCDUtils*mod
 local mod       = Fortitude
 --- @type FatigueManager
 local manager   = Fortitude.FatigueManager
---- @type ModConfig
-local config    = mod and mod.Config
-local db        = mod and mod.DB
-local log       = mod and mod.Logger
 
 mod.On.DistanceTravelled = function(data)
-    manager.AddDistance(data.distance)
+    local delta = data.distance or 0
+
+    if delta < 0.01 then
+        delta = 0
+    end
+
+    Fortitude.Config.distance_day   = Fortitude.Config.distance_day + delta
+    Fortitude.Config.distance_delta = (Fortitude.Config.distance_delta or 0) + delta
 end
 
 mod.On.CombatStateChanged = function(data)
@@ -71,7 +73,7 @@ function Fortitude:OnHudButtonEvent(elementName, instanceId, eventName, argTable
     -- Nur für Debugging: alle anderen Events (abschaltbar)
     else
         -- Debug-only: Kannst du entfernen, wenn es zu viel Spam wird
-        self.Logger:Debug(string.format(
+        self.Logger:Info(string.format(
             "[HudButton] Ignored Event=%s | element=%s | instance=%s",
             tostring(eventName), tostring(elementName), tostring(instanceId)
         ))

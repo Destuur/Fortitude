@@ -18,6 +18,9 @@ local function showPlayerStatus()
         if type(k) == "string" and k:match("^player_") then
             log:Info("  " .. k .. ": " .. tostring(v))
         end
+        if type(k) == "string" and k:match("^distance_") then
+            log:Info("  " .. k .. ": " .. tostring(v))
+        end
     end
 end
 
