@@ -32,8 +32,11 @@ function manager.AddXPFromFatigue(fatigueDelta)
     manager.xpGainBuffer = manager.xpGainBuffer + xpGain
     
     if manager.xpGainBuffer > 5 then
-        player.soul:AddSkillXP(cfg.skillName, manager.xpGainBuffer)
+        local newLevel = player.soul:AddSkillXP(cfg.skill.name, manager.xpGainBuffer)
         manager.xpGainBuffer = 0
+        if newLevel ~= 0 then
+            cfg.skill.level = newLevel
+        end
     end
 
 end

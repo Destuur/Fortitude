@@ -19,7 +19,7 @@ mod.OnGameplayStarted = function()
     KCDUtils.Config.LoadFromDB(mod.Name, mod.Config)
     KCDUtils.UI.ShowNotification("@ui_notification_fortitude_loaded")
     Fortitude.FatigueManager.UpdateFatigue()
-    player.soul:AdvanceToSkillLevel(mod.Config.skillName, 5)
+    player.soul:AdvanceToSkillLevel(mod.Config.skill.name, 5)
 
 --  ingameInitialize()
 end
