@@ -153,13 +153,13 @@ local function getWeightFactor()
 
     local rcw = player.soul:GetDerivedStat("rcw") or 0
     if rcw < 0.3 then
-        return config.carriedWeight_light
+        return config.carryWeight.light
     elseif rcw < 0.7 then
-        return config.carriedWeight_medium
+        return config.carryWeight.medium
     elseif rcw < 1.0 then
-        return config.carriedWeight_heavy
+        return config.carryWeight.heavy
     else
-        local overloadBase = config.carriedWeight_overload
+        local overloadBase = config.carryWeight.overload
         local extra = (rcw - 1.0) * 0.5
         return overloadBase + extra
     end
@@ -170,70 +170,132 @@ local function getArmorFactor()
 
     local armorWeight = player.soul:GetDerivedStat("aco") or 0
     if armorWeight < 30 then
-        return config.armorWeight_light
+        return config.armor.weight.light
     elseif armorWeight < 60 then
-        return config.armorWeight_medium
+        return config.armor.weight.medium
     else
-        return config.armorWeight_heavy
+        return config.armor.weight.heavy
     end
 end
 
-local function getMountedFactor()
-    if manager.isMounted then
-        return 0.4
+local function getMountedFactor(actor)
+    if actor == "player" then
+        if manager.isMounted then
+            return 0.4
+        else
+            return 1
+        end
     else
-        return 1
+        if manager.isMounted then
+            return 1.5
+        else
+            return 0
+        end
     end
 end
 
 local function scalePreLimit(dKm, config)
-    return 1.0 + config.fatigue_baseSlope * dKm
+    return 1.0 + config.fatigue.baseSlope * dKm
 end
 
+--- Berechnet eine sanft ansteigende, aber gedeckelte Skalierung
+--- für Distanz-basiertes Fatigue-Wachstum.
+--- Wachstum flacht ab, je näher man an limitTarget kommt.
+--- @param dKm number Distanz (in km)
+--- @param config ModConfig
+--- @return number scaleFactor
 local function scaleAll(dKm, config)
-    if dKm <= 14.0 then
-        return 1.0 + config.fatigue_baseSlope * dKm
-    else
-        local d = dKm - 14.0
-        local s14 = 1.0 + config.fatigue_baseSlope * 14.0
-        return s14
-             + config.fatigue_extraSlope * d
-             + config.fatigue_curveFactor * d * d
-    end
+    -- Zielwert aus Konfiguration (z. B. 105.0 → 1.05)
+    local maxFactor = config.fatigue.limitTarget / 100.0
+
+    -- Normierte Distanz (0 = Start, 1 = 14 km)
+    local normalized = math.min(dKm / 14.0, 4.0)
+
+    -- Logarithmische Dämpfung: steigt schnell, flacht dann ab
+    -- (1 - exp(-x)) ergibt eine weiche Sättigungskurve
+    local growth = 1.0 - math.exp(-normalized)
+
+    -- Basiswachstum + leichte Krümmung
+    local factor = 1.0 + (maxFactor - 1.0) * growth
+
+    -- Sicherheitshalber clampen
+    return math.min(factor, maxFactor)
 end
 
+--- Liefert einen geglätteten Anstieg pro Meter,
+--- unter Berücksichtigung von Sättigung bei höheren Distanzen.
+--- @param deltaMeters number Neue zurückgelegte Strecke
+--- @param deltaSeconds number Zeitintervall (Sekunden)
+--- @return number contribution
 local function getDistanceContribution(deltaMeters, deltaSeconds)
     local config = ensureConfig()
-    local baseRatePerMeter = config.fatigue_limitTarget / (14000.0 * scalePreLimit(14.0, config))
+    local fatigue = config.fatigue
+    local travel = config.travel
 
-    local d0 = config.distance_day
-    local d1 = config.distance_day + (deltaMeters / 1000.0)
+    local d0 = travel.distanceDay
+    local d1 = travel.distanceDay + (deltaMeters / 1000.0)
+
+    -- Durchschnittliche Skalierung zwischen Start und Ende
     local scale = 0.5 * (scaleAll(d0, config) + scaleAll(d1, config))
 
+    -- Basisrate: entspricht linearer Steigung bis 14 km
+    local baseRatePerMeter = 1.0 / (14000.0 * scaleAll(14.0, config))
+
+    -- Geschwindigkeit einbeziehen
     local speed = (deltaSeconds > 0) and (deltaMeters / deltaSeconds) or 0
     local speedFactor = getSpeedFactor(speed)
 
-    return deltaMeters * baseRatePerMeter * scale * speedFactor
+    local contribution = deltaMeters * baseRatePerMeter * scale * speedFactor
+
+    -- Begrenzen: Fatigue darf limitTarget nicht überschreiten
+    local projectedFatigue = config.player.fatigue + contribution
+    if projectedFatigue > fatigue.limitTarget then
+        contribution = math.max(0, fatigue.limitTarget - config.player.fatigue)
+    end
+
+    return contribution
 end
 
+--- Addiert Fatigue für den Spieler mit stabiler Skalierung.
 local function addPlayerFatigue()
     local config = ensureConfig()
-    local distanceContribution = getDistanceContribution(config.distance_delta, 1.0)
+    local distanceContribution = getDistanceContribution(config.travel.distanceDelta, 1.0)
+    if distanceContribution <= 0 then return end
+
+    local added = distanceContribution
+        * getCombatFactor()
+        * getLocationFactor()
+        * getDayTimeFactor()
+        * getWeatherFactor()
+        * getMountedFactor("player")
+        * getWeightFactor()
+        * getArmorFactor()
+        * getHealthFactor()
+        * getStaminaFactor()
+        * getHungerFactor()
+        * getExhaustionFactor()
+
+    local newValue = math.min(config.player.fatigue + added, config.fatigue.limitTarget)
+    local delta = newValue - config.player.fatigue
+
+    config.player.fatigue = newValue
+    mod.SkillManager.AddXPFromFatigue(delta)
+end
+
+local function addHorseFatigue()
+    local config = ensureConfig()
+    local distanceContribution = getDistanceContribution(config.travel.distanceDelta, 1.0)
     local combatFactor   = getCombatFactor()
-    local locationFactor = getLocationFactor()
     local dayTimeFactor  = getDayTimeFactor()
     local weatherFactor  = getWeatherFactor()
-    local mountedFactor  = getMountedFactor()
+    local mountedFactor  = getMountedFactor("horse")
     local weightFactor   = getWeightFactor()
     local armorFactor    = getArmorFactor()
     local healthFactor   = getHealthFactor()
     local staminaFactor  = getStaminaFactor()
-    local hungerFactor   = getHungerFactor()
-    local exhaustFactor  = getExhaustionFactor()
 
     local added = distanceContribution
                 * combatFactor
-                * locationFactor
                 * dayTimeFactor
                 * weatherFactor
                 * mountedFactor
@@ -241,41 +303,15 @@ local function addPlayerFatigue()
                 * armorFactor
                 * healthFactor
                 * staminaFactor
-                * hungerFactor
-                * exhaustFactor
 
-    config.player_fatigue = config.player_fatigue + added
-
-    System.ClearConsole()
-    mod.Logger:Info(string.format("Player Fatigue calculation:"))
-    mod.Logger:Info(string.format("  deltaDistance     = %.2f", config.distance_delta))
-    mod.Logger:Info(string.format("  baseContribution = %.4f", distanceContribution))
-    mod.Logger:Info(string.format("  combatFactor     = %.2f", combatFactor))
-    mod.Logger:Info(string.format("  locationFactor   = %.2f", locationFactor))
-    mod.Logger:Info(string.format("  dayTimeFactor    = %.2f", dayTimeFactor))
-    mod.Logger:Info(string.format("  weatherFactor    = %.2f", weatherFactor))
-    mod.Logger:Info(string.format("  mountedFactor    = %.2f", mountedFactor))
-    mod.Logger:Info(string.format("  weightFactor     = %.2f", weightFactor))
-    mod.Logger:Info(string.format("  armorFactor      = %.2f", armorFactor))
-    mod.Logger:Info(string.format("  healthFactor     = %.2f", healthFactor))
-    mod.Logger:Info(string.format("  staminaFactor    = %.2f", staminaFactor))
-    mod.Logger:Info(string.format("  hungerFactor     = %.2f", hungerFactor))
-    mod.Logger:Info(string.format("  exhaustFactor    = %.2f", exhaustFactor))
-    mod.Logger:Info(string.format("  --> addedFatigue = %.2f", added))
-    mod.Logger:Info(string.format("  totalFatigue     = %.2f", config.player_fatigue))
-end
-
-local function addHorseFatigue()
-    local config = ensureConfig()
-    if manager.isMounted then
-        config.horse_fatigue = config.horse_fatigue + (config.distance_delta * config.horse_fatiguePerMeter)
-    end
+    local newValue = math.min(config.horse.fatigue + added, config.fatigue.limitTarget)
+    config.horse.fatigue = newValue
 end
 
 local function checkFatigueThreshold()
     local config = ensureConfig()
 
-    if config.player_fatigue > config.fatigueThreshold_firstOverExtend then
+    if config.player.fatigue > config.fatigue.thresholds.firstOverExtend then
         player.soul:DealDamage(0, 0, nil, false, nil)
     end
 end
@@ -288,26 +324,26 @@ local function increaseExhaustion(hoursSlept, fatigueLastDay)
     local cfg = ensureConfig()
     local added = 0
 
-    if fatigueLastDay >= cfg.fatigueThreshold_firstOverExtend
-       and fatigueLastDay < cfg.fatigueThreshold_secondOverExtend then
+    if fatigueLastDay >= cfg.fatigue.thresholds.firstOverExtend
+       and fatigueLastDay < cfg.fatigue.thresholds.secondOverExtend then
         local chance = math.min(20 + hoursSlept * 5, 80)
         if randomChance(chance) then
             added = added + 1
         end
 
-    elseif fatigueLastDay >= cfg.fatigueThreshold_secondOverExtend
-           and fatigueLastDay < cfg.fatigueThreshold_thirdOverExtend then
+    elseif fatigueLastDay >= cfg.fatigue.thresholds.secondOverExtend
+           and fatigueLastDay < cfg.fatigue.thresholds.thirdOverExtend then
         added = added + 1
 
-    elseif fatigueLastDay >= cfg.fatigueThreshold_thirdOverExtend
-           and fatigueLastDay < cfg.fatigueThreshold_overkill then
+    elseif fatigueLastDay >= cfg.fatigue.thresholds.thirdOverExtend
+           and fatigueLastDay < cfg.fatigue.thresholds.overkill then
         added = added + 1
         local chance = math.min(30 + hoursSlept * 10, 90)
         if randomChance(chance) then
             added = added + 1
         end
 
-    elseif fatigueLastDay >= cfg.fatigueThreshold_overkill then
+    elseif fatigueLastDay >= cfg.fatigue.thresholds.overkill then
         added = added + 2
     end
 
@@ -319,7 +355,7 @@ local function decreaseExhaustion(fatigueLastDay)
     local removed = 0
 
     local baseChance = 10
-    local scale = math.max(0, (cfg.fatigueThreshold_buffEnd - fatigueLastDay))
+    local scale = math.max(0, (cfg.fatigue.thresholds.buffEnd - fatigueLastDay))
     local chance = math.min(baseChance + scale * 2, 90)
 
     if randomChance(chance) then
@@ -333,9 +369,9 @@ local function handleExhaustion(hoursSlept, fatigueLastDay)
     local config = ensureConfig()
     local delta = 0
 
-    if fatigueLastDay <= config.fatigueThreshold_buffEnd and hoursSlept >= 6 then
+    if fatigueLastDay <= config.fatigue.thresholds.buffEnd and hoursSlept >= 6 then
         delta = -decreaseExhaustion(fatigueLastDay)
-    elseif fatigueLastDay > config.fatigueThreshold_bufferZone then
+    elseif fatigueLastDay > config.fatigue.thresholds.bufferZone then
         delta = increaseExhaustion(hoursSlept, fatigueLastDay)
     end
 
@@ -360,30 +396,28 @@ function manager.AddActivity(activity)
 end
 
 function manager:RefreshFatigue(hoursSlept)
-    local config = ensureConfig()
+    local cfg = ensureConfig()
+    if not cfg then return end
 
-    local fatigueLastDay = config.player_fatigue
-    local recovered = calcRecovery(hoursSlept, config)
-    config.player_fatigue = math.max(0, config.player_fatigue - recovered)
+    local _, bedFactor = Fortitude.DetectBedQuality()
+
+    local fatigueLastDay = cfg.player.fatigue
+    local recovered = calcRecovery(hoursSlept, cfg) * bedFactor
+    cfg.player.fatigue = math.max(0, cfg.player.fatigue - recovered)
 
     local change = handleExhaustion(hoursSlept, fatigueLastDay)
-    config.player_exhaustion = math.min(6, math.max(0, config.player_exhaustion + change))
+    cfg.player.exhaustion = math.min(6, math.max(0, cfg.player.exhaustion + change))
 
-    mod.BuffManager.HandleExhaustionBuff()
+    Script.SetTimer(500, function()
+        Fortitude.BuffManager.HandleExhaustionBuff()
+    end)
 
-    config.distance_day = 0
-
-    mod.Logger:Info(string.format(
-        "Slept %.2f hours → Fatigue before=%.2f, recovered=%.2f, after=%.2f",
-        hoursSlept, fatigueLastDay, recovered, config.player_fatigue
-    ))
+    cfg.travel.distanceDay = 0
 end
 
 function manager.UpdateFatigue()
     local config = ensureConfig()
-    local delta = config.distance_delta or 0
-
-    mod.Logger:Info(string.format("Start Updating | delta=%.5f", delta))
+    local delta = config.travel.distanceDelta or 0
 
     if delta > 0 then
         addHorseFatigue()
@@ -392,7 +426,7 @@ function manager.UpdateFatigue()
 
     mod.BuffManager.HandleFatigueBuff()
 
-    config.distance_delta = 0
+    config.travel.distanceDelta = 0
 
     Script.SetTimer(1000, Fortitude.FatigueManager.UpdateFatigue)
 end

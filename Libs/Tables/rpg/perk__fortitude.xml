@@ -1,6 +1,12 @@
-<?xml version="1.0" encoding="us-ascii"?>
+<?xml version="1.0" encoding="utf-8"?>
 <database xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="barbora" xsi:noNamespaceSchemaLocation="../database.xsd">
 	<perks version="1">
+		
+		<!--Hardcore Perks-->
 		<perk autolearnable="false" exclude_in_game_mode="1" icon_id="hardcore_weak_constitution" perk_id="93404e3b-4d26-4e98-8dfe-166773094cb9" perk_name="hardcore_weak_constitution" perk_ui_desc="perk_hardcore_weak_constitution_desc" perk_ui_lore_desc="perk_hardcore_weak_constitution_lore_desc" perk_ui_name="perk_hardcore_weak_constitution_name" visibility="1" />
+		<perk autolearnable="false" exclude_in_game_mode="1" icon_id="hardcore_stone_shoes" perk_id="e13933e5-78a8-4064-882d-d3b2dea5c97a" perk_name="hardcore_stone_shoes" perk_ui_desc="perk_hardcore_stone_shoes_desc" perk_ui_lore_desc="perk_hardcore_stone_shoes_lore_desc" perk_ui_name="perk_hardcore_stone_shoes_name" visibility="1" />
+		
+		<!--Skill Perks-->
+		<perk autolearnable="false" icon_id="perk_black_arts_apprentice" level="6" perk_id="9fc590a9-5195-4de0-930f-a1308200dbeb" perk_name="Perk 1" perk_ui_desc="perk_perk_1_desc" perk_ui_lore_desc="perk_perk_1_lore_desc" perk_ui_name="perk_perk_1_name" skill_selector="12" visibility="2" />
 	</perks>
 </database>

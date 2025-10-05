@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<database xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="barbora" xsi:noNamespaceSchemaLocation="../database.xsd">
+	<armor_types version="1">
+		<armor_type CanHealthChange="true" EquipBuffId="061d9f55-6652-461f-bb64-471a631f2d21" Id="56" Name="Bridle" Surface="mat_leather" />
+		<armor_type CanHealthChange="true" EquipBuffId="e2f2e0c7-b1d0-4ec5-8f1f-9f412f547f2d" Id="57" Name="Saddle" Surface="mat_leather" />
+		<armor_type CanHealthChange="true" EquipBuffId="78dab124-7126-493c-b651-66258042570f" Id="58" Name="Caparison" Surface="mat_fabric" />
+		<armor_type CanHealthChange="true" EquipBuffId="2aef664e-3b40-4a59-bedf-6af5a83a2720" Id="59" Name="HorsePlate" Surface="mat_plate" />
+		<armor_type CanHealthChange="true" EquipBuffId="41e625ec-7783-46fd-8409-e2f05d93d023" Id="60" Name="HorseShoe" Surface="mat_plate" />
+		<armor_type CanHealthChange="true" EquipBuffId="3339697b-c4de-4df1-b49e-9a57c8c0bb7f" Id="61" Name="HorsePadded" Surface="mat_fabric" />
+	</armor_types>
+</database>

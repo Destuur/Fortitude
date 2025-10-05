@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<database xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="barbora" xsi:noNamespaceSchemaLocation="../database.xsd">
+	<skills version="1">
+		<skill _comment="in" category="0" hidden="false" skill_desc_nolevel="ui_skill_fortitude_desc0" skill_id="12" skill_name="first_aid" ui_levelup_string_name="ui_skill_fortitude_levelup" ui_order="0" ui_string_name="ui_skill_fortitude" />
+	</skills>
+</database>

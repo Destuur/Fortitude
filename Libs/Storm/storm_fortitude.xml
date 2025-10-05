@@ -1,0 +1,8 @@
+﻿<?xml version="1.0"?>
+<storm>
+	<tasks>
+		<task name="abilities" class="abilities">
+			<source path="fortitude.xml" />
+		</task>
+	</tasks>
+</storm>

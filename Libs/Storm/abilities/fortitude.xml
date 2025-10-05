@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<!DOCTYPE storm SYSTEM "..\storm.dtd">
+<storm>
+	<rules>
+		<rule name="player_henry">
+			<selectors>
+				<hasName name="player_henry"/>
+			</selectors>
+			<operations>
+				<setAttribute skill="first_aid" value="5" />
+			</operations>
+		</rule>
+    </rules>
+</storm>

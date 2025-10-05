@@ -2,5 +2,7 @@
 <database xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="barbora" xsi:noNamespaceSchemaLocation="../database.xsd">
 	<perk_buffs version="1">
 		<perk_buff buff_id="44d83d12-9709-4e54-9b7d-9b6bcfb630be" perk_id="93404e3b-4d26-4e98-8dfe-166773094cb9" />
+		<perk_buff buff_id="44d83d12-9709-4e54-9b7d-9b6bcfb630be" perk_id="e13933e5-78a8-4064-882d-d3b2dea5c97a" />
+		<perk_buff buff_id="44d83d12-9709-4e54-9b7d-9b6bcfb630be" perk_id="9fc590a9-5195-4de0-930f-a1308200dbeb" />
 	</perk_buffs>
 </database>

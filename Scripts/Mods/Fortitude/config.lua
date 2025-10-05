@@ -2,91 +2,162 @@ FortitudeConfig = FortitudeConfig or {}
 
 --- @class ModConfig
 FortitudeConfig.defaultConfig = {
-
---- =========================================
---- Player Resources
---- =========================================
-
-    player_fatigue               = 0,
-    player_fatiguePerMeter       = 0.1,
-    player_exhaustion            = 0,
-    player_skillLevel            = 0,
-    player_refresh               = 10,
-
---- =========================================
---- Horse Resources
---- =========================================
-
-    horse_fatigue                = 0,
-    horse_fatiguePerMeter        = 0.05,
-
---- =========================================
---- Fatigue Config
---- =========================================
-
-    fatigue_limitTarget    = 105.0,
-    fatigue_baseSlope      = 0.1,
-    -- fatigue_baseSlope      = 0.005,
-    fatigue_extraSlope     = 0.0005,
-    fatigue_curveFactor    = 0.0001,
-
---- =========================================
---- Fatigue Thresholds
---- =========================================
-
-    fatigueThreshold_buffStart        = 70,
-    fatigueThreshold_buffEnd          = 100,
-    fatigueThreshold_bufferZone       = 105,
-    fatigueThreshold_firstOverExtend  = 120,
-    fatigueThreshold_secondOverExtend = 135,
-    fatigueThreshold_thirdOverExtend  = 150,
-    fatigueThreshold_overkill         = 170,
+    -------------------------------------------------------------------
+    --#region GENERAL CONFIG ------------------------------------------
+    -------------------------------------------------------------------
     
---- =========================================
---- Fatigue Buffs
---- =========================================
+    skillName = "first_aid",
 
-    fatigue_currentBuff = "",
-    fatigue_testBuff = "1aa6a7cc-4cee-4b73-8080-562bebc21443",
+    --#endregion
 
---- =========================================
---- Exhaustion Buffs
---- =========================================
+    -------------------------------------------------------------------
+    --#region PLAYER --------------------------------------------------
+    -------------------------------------------------------------------
+    player = {
+        fatigue          = 0,
+        fatiguePerMeter  = 0.1,
+        exhaustion       = 0,
+        skillLevel       = 0,
+        refreshRate      = 13,
+    },
+    --#endregion
+    -------------------------------------------------------------------
+    
+    -------------------------------------------------------------------
+    --#region HORSE ---------------------------------------------------
+    -------------------------------------------------------------------
+    horse = {
+        fatigue          = 0,
+        fatiguePerMeter  = 0.05,
+    },
+    --#endregion
+    -------------------------------------------------------------------
+    
+    -------------------------------------------------------------------
+    --#region FATIGUE CONFIG ------------------------------------------
+    -------------------------------------------------------------------
+    fatigue = {
+        limitTarget = 105.0,
+        baseSlope   = 0.005,
+        extraSlope  = 0.0005,
+        curveFactor = 0.0001,
 
-    exhaustion_currentBuff = "",
-    exhaustion_testBuff = "b9f062d3-c06e-4698-90d4-e642e863337b",
+        thresholds = {
+            buffStart        = 70,
+            buffEnd          = 100,
+            bufferZone       = 105,
+            firstOverExtend  = 120,
+            secondOverExtend = 135,
+            thirdOverExtend  = 150,
+            overkill         = 170,
+        },
 
---- =========================================
---- Distance
---- =========================================
+        buffs = {
+            flowZone         = { id = "1aa6a7cc-4cee-4b73-8080-562bebc21443", instanceId = nil, isActive = false },
+            firstOverExtend  = { id = "10fc25ca-c095-44c6-b88b-d54ad58ab0a6" , instanceId = nil, isActive = false },
+            secondOverExtend = { id = "30725214-37be-4afd-aabf-a9a35869be38" , instanceId = nil, isActive = false },
+            thirdOverExtend  = { id = "54e47564-c338-4de0-808d-fde58ec3c5be" , instanceId = nil, isActive = false },
+            overkill         = { id = "1aa6a7cc-4cee-4b73-8080-562bebc21443"  , instanceId = nil, isActive = false },
+        },
+    },
+    --#endregion
+    -------------------------------------------------------------------
+    
+    -------------------------------------------------------------------
+    --#region EXHAUSTION CONFIG ---------------------------------------
+    -------------------------------------------------------------------
+    exhaustion = {
+        buffs = {
+            level1 = { id = "1aa6a7cc-4cee-4b73-8080-562bebc21443", instanceId = nil, isActive = false },
+            level2 = { id = "1aa6a7cc-4cee-4b73-8080-562bebc21443", instanceId = nil, isActive = false },
+            level3 = { id = "1aa6a7cc-4cee-4b73-8080-562bebc21443", instanceId = nil, isActive = false },
+            level4 = { id = "1aa6a7cc-4cee-4b73-8080-562bebc21443", instanceId = nil, isActive = false },
+            level5 = { id = "1aa6a7cc-4cee-4b73-8080-562bebc21443", instanceId = nil, isActive = false },
+            level6 = { id = "1aa6a7cc-4cee-4b73-8080-562bebc21443", instanceId = nil, isActive = false },
+        },
+    },
+    --#endregion
+    -------------------------------------------------------------------
 
-    distance_day = 0,
-    distance_delta = 0,
+    -------------------------------------------------------------------
+    --#region WAKEUP CONFIG -------------------------------------------
+    -------------------------------------------------------------------
+    wakeup = {
+        buffs = {
+            firstOverExtend     = "",
+            secondOverExtend    = "",
+            thirdOverExtend     = "",
+            overkill            = ""
+        }
+    },
+    --#endregion
+    -------------------------------------------------------------------
 
---- =========================================
---- Activities
---- =========================================
+    -------------------------------------------------------------------
+    --#region BUFF STATES ---------------------------------------------
+    -------------------------------------------------------------------
+    buffStates = {
+        fatigue = {
+            id = "fatigue",
+            instance = nil,
+            template = nil,
+            active = false,
+        },
+        exhaustion = {
+            id = "exhaustion",
+            instance = nil,
+            template = nil,
+            active = false,
+        }
+    },
+    --#endregion
+    -------------------------------------------------------------------
 
-    activity_washArmor   = 3,
-    activity_washFace    = 3,
-    activity_repairArmor = 6,
-    activity_blacksmith  = 12,
-    activity_alchemy     = 4,
+    -------------------------------------------------------------------
+    --#region TRAVEL / DISTANCE ---------------------------------------
+    -------------------------------------------------------------------
+    travel = {
+        distanceDay   = 0,
+        distanceDelta = 0,
+    },
+    --#endregion
+    -------------------------------------------------------------------
 
---- =========================================
---- Armor Weights
---- =========================================
+    -------------------------------------------------------------------
+    --#region ACTIVITIES ----------------------------------------------
+    -------------------------------------------------------------------
+    activities = {
+        washArmor   = 3,
+        washFace    = 3,
+        repairArmor = 6,
+        blacksmith  = 12,
+        alchemy     = 4,
+    },
+    --#endregion
+    -------------------------------------------------------------------
 
-    armorWeight_light  = 1.0,
-    armorWeight_medium = 1.2,
-    armorWeight_heavy  = 1.4,
+    -------------------------------------------------------------------
+    --#region ARMOR ---------------------------------------------------
+    -------------------------------------------------------------------
+    armor = {
+        weight = {
+            light  = 1.0,
+            medium = 1.2,
+            heavy  = 1.4,
+        }
+    },
+    --#endregion
+    -------------------------------------------------------------------
 
---- =========================================
---- Carried Weights
---- =========================================
-
-    carriedWeight_light    = 1.0,
-    carriedWeight_medium   = 1.3,
-    carriedWeight_heavy    = 1.4,
-    carriedWeight_overload = 1.8,
+    -------------------------------------------------------------------
+    --#region CARRY WEIGHT --------------------------------------------
+    -------------------------------------------------------------------
+    carryWeight = {
+        light    = 1.0,
+        medium   = 1.3,
+        heavy    = 1.4,
+        overload = 1.8,
+    },
+    --#endregion
+    -------------------------------------------------------------------
 }

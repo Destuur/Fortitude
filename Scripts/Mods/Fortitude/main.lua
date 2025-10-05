@@ -12,8 +12,8 @@ mod.On.DistanceTravelled = function(data)
         delta = 0
     end
 
-    Fortitude.Config.distance_day   = Fortitude.Config.distance_day + delta
-    Fortitude.Config.distance_delta = (Fortitude.Config.distance_delta or 0) + delta
+    Fortitude.Config.travel.distanceDay   = Fortitude.Config.travel.distanceDay + delta
+    Fortitude.Config.travel.distanceDelta = (Fortitude.Config.travel.distanceDelta or 0) + delta
 end
 
 mod.On.CombatStateChanged = function(data)
@@ -51,7 +51,6 @@ function Fortitude:OnHudButtonEvent(elementName, instanceId, eventName, argTable
         local actionName = tostring(argTable[1] or "nil")
         local activationMode = tonumber(argTable[2] or -1)
 
-        -- Mode interpretieren
         local modeText = ({
             [0] = "Pressed",
             [1] = "Held",
@@ -70,9 +69,7 @@ function Fortitude:OnHudButtonEvent(elementName, instanceId, eventName, argTable
             actionName, tostring(elementName), tostring(instanceId)
         ))
 
-    -- Nur für Debugging: alle anderen Events (abschaltbar)
     else
-        -- Debug-only: Kannst du entfernen, wenn es zu viel Spam wird
         self.Logger:Info(string.format(
             "[HudButton] Ignored Event=%s | element=%s | instance=%s",
             tostring(eventName), tostring(elementName), tostring(instanceId)
@@ -87,7 +84,6 @@ else
     System.LogAlways("[Fortitude] ⚠️ UIAction not available for SkipTime registration")
 end
 
--- Registrierung
 if UIAction and UIAction.RegisterElementListener then
     UIAction.RegisterElementListener(Fortitude, "HUD", -1, "", "OnHudButtonEvent")
     Fortitude.Logger:Info("Registered OnHudButtonEvent listener on hud UI element.")
