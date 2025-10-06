@@ -63,6 +63,12 @@ FortitudeConfig.defaultConfig = {
             overkill         = { id = "5d51e01e-7c3f-4f14-8450-3245cfc3cebe"  , instanceId = nil, isActive = false },
         },
     },
+
+    resting = {
+        regenRateSitting = 0.03,
+        regenRateStanding = 0.01,
+        maxRegenFromRest = 10.0
+    },
     --#endregion
     -------------------------------------------------------------------
     
@@ -145,8 +151,8 @@ FortitudeConfig.defaultConfig = {
     armor = {
         weight = {
             light  = 1.0,
-            medium = 1.2,
-            heavy  = 1.4,
+            medium = 1.5,
+            heavy  = 2,
         }
     },
     --#endregion
@@ -157,9 +163,9 @@ FortitudeConfig.defaultConfig = {
     -------------------------------------------------------------------
     carryWeight = {
         light    = 1.0,
-        medium   = 1.3,
-        heavy    = 1.4,
-        overload = 1.8,
+        medium   = 1.5,
+        heavy    = 2,
+        overload = 3,
     },
     --#endregion
     -------------------------------------------------------------------

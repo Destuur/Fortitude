@@ -49,8 +49,22 @@ local function printHelp()
     log:Info("  fortitude_help        - Show command help")
 end
 
+local function showPlayerStats()
+    local log = Fortitude.Logger
+    local config = Fortitude.Config
+    
+    log:Info("Player:")
+    log:Info("  Fatigue: " .. config.player.fatigue)
+    log:Info("  Exhaustion: " .. config.player.exhaustion)
+    log:Info("Horse:")
+    log:Info("  Fatigue: " .. config.horse.fatigue)
+end
+
 --- @bindingCommand fortitude_show_status
 --- @bindingMap movement
 KCDUtils.Command.AddFunction("fortitude", "show_status", showPlayerStatus, "Show current configuration and status")
+--- @bindingCommand fortitude_stats
+--- @bindingMap movement
+KCDUtils.Command.AddFunction("fortitude", "stats", showPlayerStats, "Shows fatigue and exhaustion")
 KCDUtils.Command.AddFunction("fortitude", "reset", resetConfig, "Reset configuration to defaults")
 KCDUtils.Command.AddFunction("fortitude", "help", printHelp, "Show command help")

@@ -98,21 +98,21 @@ local function selectFatigueTemplate(cfg, fatigue)
     local b = cfg.fatigue.buffs
 
     if fatigue < t.buffStart then
-        return nil
+        return nil, nil
     elseif fatigue <= t.buffEnd then
-        return b.flowZone.id
+        return b.flowZone.id, b.flowZone
     elseif fatigue <= t.bufferZone then
-        return nil
+        return nil, nil
     elseif fatigue <= t.firstOverExtend then
-        return b.firstOverExtend.id
+        return b.firstOverExtend.id, b.firstOverExtend
     elseif fatigue <= t.secondOverExtend then
-        return b.secondOverExtend.id
+        return b.secondOverExtend.id, b.secondOverExtend
     elseif fatigue <= t.thirdOverExtend then
-        return b.thirdOverExtend.id
+        return b.thirdOverExtend.id, b.thirdOverExtend
     elseif fatigue >= t.overkill then
-        return b.overkill.id
+        return b.overkill.id, b.overkill
     else
-        return nil
+        return nil, nil
     end
 end
 
@@ -120,14 +120,16 @@ function manager.HandleFatigueBuff()
   local cfg = ensureConfig()
   if not cfg then return end
 
-  local desired, entry = selectFatigueTemplate(cfg, cfg.player.fatigue)
-
-  resetBuffObjects(cfg.fatigue.buffs)
+  local fatigue = cfg.player.fatigue or 0
+  local desired, entry = selectFatigueTemplate(cfg, fatigue)
 
   if not desired then
+    if cfg.buffStates.fatigue.active then
+    end
     safeRemove(cfg.buffStates.fatigue, "no buff desired")
     return
   end
+
 
   setBuff(cfg.buffStates.fatigue, desired)
 
@@ -135,13 +137,6 @@ function manager.HandleFatigueBuff()
     entry.isActive = true
     entry.instanceId = cfg.buffStates.fatigue.instance
   end
-end
-
----------------------------------------------------------------------
--- Exhaustion Buff Handling
----------------------------------------------------------------------
-
-function manager.HandleWakeupBuff()
 end
 
 ---------------------------------------------------------------------
@@ -170,14 +165,16 @@ function manager.HandleExhaustionBuff()
   local cfg = ensureConfig()
   if not cfg then return end
 
-  local desired, entry = selectExhaustionTemplate(cfg, cfg.player.exhaustion or 0)
-
-  resetBuffObjects(cfg.exhaustion.buffs)
+  local ex = cfg.player.exhaustion or 0
+  local desired, entry = selectExhaustionTemplate(cfg, ex)
 
   if not desired then
+    if cfg.buffStates.exhaustion.active then
+    end
     safeRemove(cfg.buffStates.exhaustion, "no buff desired")
     return
   end
+
 
   setBuff(cfg.buffStates.exhaustion, desired)
 
@@ -193,9 +190,9 @@ end
 
 function manager.ClearAll()
   local cfg = ensureConfig()
-  if not cfg then
-    return
-    end
+  if not cfg then return end
+
+
   safeRemove(cfg.buffStates.fatigue, "clearAll")
   safeRemove(cfg.buffStates.exhaustion, "clearAll")
   resetBuffObjects(cfg.fatigue.buffs)
@@ -204,9 +201,8 @@ end
 
 function manager.SyncFromConfig()
   local cfg = ensureConfig()
-  if not cfg then
-    return
-    end
+  if not cfg then return end
+
 
   for name, slot in pairs(cfg.buffStates) do
     if slot.active and isValidTemplate(slot.template) and not slot.instance then
@@ -218,25 +214,6 @@ function manager.SyncFromConfig()
       end
     end
   end
-
-  local function resyncGroup(group, gname)
-    for k, v in pairs(group) do
-      if type(v) == "table" and v.isActive then
-        if isValidTemplate(v.id) and (not v.instanceId or v.instanceId == "") then
-          local ok, inst = pcall(function() return player.soul:AddBuff(v.id) end)
-          if ok then
-            v.instanceId = inst
-          else
-            v.isActive = false
-            v.instanceId = nil
-          end
-        end
-      end
-    end
-  end
-
-  resyncGroup(cfg.fatigue.buffs, "fatigue")
-  resyncGroup(cfg.exhaustion.buffs, "exhaustion")
 end
 
 ---------------------------------------------------------------------

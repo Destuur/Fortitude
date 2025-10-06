@@ -8,7 +8,9 @@
     "ScriptLoader",
     "player",
     "EnvironmentModule",
-    "UIAction"
+    "UIAction",
+    "Smithery",
+    "AlchemyTable"
   ],
   "Lua.diagnostics.disable": [
     "inject-field",
