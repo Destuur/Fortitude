@@ -5,6 +5,21 @@ local mod       = Fortitude
 --- @type FatigueManager
 local manager   = Fortitude.FatigueManager
 
+local CONFIRM_LC = {
+  onamountdialogconfirmclicked  = true,
+  oninfodialogconfirmclicked    = true,
+  onhealingdialogconfirmclicked = true,
+  oncombinedialogconfirmclicked = true,
+  onquestiondialogconfirmclicked= true,
+}
+
+local CANCEL_LC = {
+  onamountdialogcancelclicked   = true,
+  onhealingdialogcancelclicked  = true,
+  oncombinedialogcancelclicked  = true,
+  onquestiondialogcancelclicked = true,
+}
+
 mod.On.DistanceTravelled = function(data)
     local delta = data.distance or 0
     local cfg = Fortitude.Config
@@ -36,15 +51,31 @@ mod.On.SittingChanged = function(data)
     manager.isSitting = data.isSitting
 end
 
-function Fortitude:DoStuff()
+Fortitude.On.ButcherStarted = function(ev)
+  Fortitude.Logger:Info(("[ButcherStarted] class=%s id=%s"):format(tostring(ev.class), tostring(ev.entity and ev.entity.id)))
+
+  local sizeByClass = {
+    Hare="small", Hen="small", Raven="small",
+    SheepEwe="medium", SheepRam="medium", Pig="medium", Dog="medium", Wolf="medium",
+    Boar="large", CattleCow="large", CattleBull="large", Horse="large",
+  }
+  local size = sizeByClass[ev.class] or "medium"
+  local key  = "butcher_"..size
+
+  if Fortitude.FatigueManager and Fortitude.FatigueManager.AddActivity then
+    Fortitude.FatigueManager.AddActivity(key)
+  end
+end
+
+function mod:DoStuff()
     KCDUtils.UI.ShowNotification("Doing stuff in Fortitude mod!")
 end
 
-function Fortitude:DoMoreStuff()
+function mod:DoMoreStuff()
     KCDUtils.UI.ShowNotification("Doing more stuff in Fortitude mod!")
 end
 
-function Fortitude:OnSkipTimeEvent(elementName, instanceId, eventName, argTable)
+function mod:OnSkipTimeEvent(elementName, instanceId, eventName, argTable)
     if eventName == "OnSetFaderState" and argTable and argTable[1] == "sleep" then
         self.sleepStartHour = KCDUtils.Calendar.GetWorldHourOfDay()
 
@@ -58,63 +89,50 @@ function Fortitude:OnSkipTimeEvent(elementName, instanceId, eventName, argTable)
     end
 end
 
-if UIAction and UIAction.RegisterElementListener then
-    UIAction.RegisterElementListener(Fortitude, "SkipTime", -1, "", "OnSkipTimeEvent")
-    Fortitude.Logger:Info("Registered OnSkipTimeEvent listener on SkipTime UI element.")
-else
-    System.LogAlways("[Fortitude] ⚠️ UIAction not available for SkipTime registration")
-end
-
 -- wh_pl_OrbitCameraPosition 0 15 3
 -- wh_pl_FollowEntity dude
 -- wait 100
 -- wh_pl_FollowEntity 7
 -- wh_ui_ShowCursor 0
 
-
--- Registrierung: genau der Elementname aus der XML
 if UIAction and UIAction.RegisterElementListener then
-    UIAction.RegisterElementListener(Fortitude, "ApseModalDialog", -1, "", "OnApseDialogEvent")
-    Fortitude.Logger:Info("✅ Listening on 'ApseModalDialog' for ALL events.")
-else
-    System.LogAlways("[Fortitude] ⚠️ UIAction not available for ApseModalDialog registration")
+    UIAction.RegisterElementListener(Fortitude, "SkipTime", -1, "", "OnSkipTimeEvent")
 end
 
--- Ein Listener für alles: wir loggen, filtern aber "Dialog"-Events extra hübsch
+if UIAction and UIAction.RegisterElementListener then
+  UIAction.RegisterElementListener(Fortitude, "ApseModalDialog", -1, "", "OnApseDialogEvent")
+end
+
 function Fortitude:OnApseDialogEvent(elementName, instanceId, eventName, argTable)
-    -- Alles loggen:
-    self.Logger:Info(string.format("[ApseDialog] event=%s | element=%s | instance=%s",
-        tostring(eventName), tostring(elementName), tostring(instanceId)))
+  self.Logger:Info(("[ApseDialog] event=%s | element=%s | instance=%s")
+    :format(tostring(eventName), tostring(elementName), tostring(instanceId)))
 
-    if argTable then
-        for k, v in pairs(argTable) do
-            self.Logger:Info(string.format("  args.%s = %s", tostring(k), tostring(v)))
-        end
+  if type(FinishCrafting) ~= "function" or type(StartCrafting) ~= "function" then
+    self.Logger:Error("[ApseDialog] Activity helpers not loaded yet (Start/FinishCrafting)")
+    return
+  end
+
+  local ev = tostring(eventName or ""):lower()
+
+  if CONFIRM_LC[ev] then
+    return FinishCrafting(true)
+  elseif CANCEL_LC[ev] then
+    return FinishCrafting(false)
+  end
+
+  local A = Fortitude.Activity
+  if not (A and A.active) then return end
+
+  if ev == "onshow" then
+    if A.kind == "blacksmith" then
+      A.dialogShows = (A.dialogShows or 0) + 1
+      self.Logger:Info(("[ApseDialog] blacksmith OnShow #%d"):format(A.dialogShows))
+      if A.dialogShows >= 2 then
+        return FinishCrafting(true)
+      end
+      return
     else
-        self.Logger:Info("  (no args)")
+      return FinishCrafting(true)
     end
-
-    -- Optional: hübsche Kurzmeldungen für die relevanten Dialog-Resultate
-    if eventName == "onAmountDialogConfirmClicked" then
-        self.Logger:Info("[ApseDialog] AmountDialog: CONFIRM")
-        -- Falls du den Wert brauchst und die UI das unterstützt:
-        -- UIAction.CallFunction("ApseModalDialog", -1, "fc_getAmountDialogValue")
-        -- (Je nach Implementierung füllt die UI evtl. ein Array oder triggert ein anderes Event.)
-    elseif eventName == "onAmountDialogCancelClicked" then
-        self.Logger:Info("[ApseDialog] AmountDialog: CANCEL")
-    elseif eventName == "onInfoDialogConfirmClicked" then
-        self.Logger:Info("[ApseDialog] InfoDialog: OK")
-    elseif eventName == "onHealingDialogConfirmClicked" then
-        self.Logger:Info("[ApseDialog] HealingDialog: CONFIRM")
-    elseif eventName == "onHealingDialogCancelClicked" then
-        self.Logger:Info("[ApseDialog] HealingDialog: CANCEL")
-    elseif eventName == "onCombineDialogConfirmClicked" then
-        self.Logger:Info("[ApseDialog] CombineDialog: CONFIRM")
-    elseif eventName == "onCombineDialogCancelClicked" then
-        self.Logger:Info("[ApseDialog] CombineDialog: CANCEL")
-    elseif eventName == "onCombineDialogSelectClicked" then
-        self.Logger:Info("[ApseDialog] CombineDialog: SELECT")
-    elseif eventName == "onCombineFocusChanged" then
-        self.Logger:Info("[ApseDialog] CombineDialog: FOCUS CHANGED")
-    end
+  end
 end

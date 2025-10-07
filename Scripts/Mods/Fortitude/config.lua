@@ -136,11 +136,15 @@ FortitudeConfig.defaultConfig = {
     --#region ACTIVITIES ----------------------------------------------
     -------------------------------------------------------------------
     activities = {
-        washArmor   = 3,
-        washFace    = 3,
-        repairArmor = 6,
-        blacksmith  = 12,
-        alchemy     = 4,
+        washArmor       = 3,
+        washFace        = 3,
+        repairArmor     = 6,
+        blacksmith      = 12,
+        alchemy         = 4,
+        herbGathering   = 0.5,
+        butcher_small    = 3,
+        butcher_medium   = 6,
+        butcher_large    = 9
     },
     --#endregion
     -------------------------------------------------------------------

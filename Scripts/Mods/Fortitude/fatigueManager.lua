@@ -428,6 +428,22 @@ local function calcRecovery(hoursSlept, config)
 end
 
 function manager.AddActivity(activity)
+    local cfg = Fortitude.Config; if not cfg or not cfg.activities then return end
+    local amount = tonumber(cfg.activities[activity] or 0) or 0
+    if amount <= 0 then
+        Fortitude.Logger:Info(("[Fatigue] No amount configured for activity '%s'"):format(tostring(activity)))
+        return
+    end
+
+    local before = cfg.player.fatigue or 0
+    cfg.player.fatigue = before + amount
+
+    Fortitude.Logger:Info(string.format("[Fatigue] +%g from %s (%.2f → %.2f)",
+        amount, activity, before, cfg.player.fatigue))
+
+    if Fortitude.SkillManager and Fortitude.SkillManager.AddXPFromFatigue then
+        Fortitude.SkillManager.AddXPFromFatigue(amount)
+    end
 end
 
 function manager:RefreshFatigue(hoursSlept)

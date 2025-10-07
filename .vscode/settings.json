@@ -14,6 +14,7 @@
   ],
   "Lua.diagnostics.disable": [
     "inject-field",
-    "return-type-mismatch"
+    "return-type-mismatch",
+    "undefined-field"
   ]
 }
