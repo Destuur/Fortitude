@@ -98,22 +98,57 @@ local function getLocationFactor()
     end
 end
 
-local function getHealthFactor()
+local function getCurrentHorse()
+    local wuid = player.player:GetPlayerHorse()
+    if not wuid then
+        return nil
+    end
+    local horse = XGenAIModule.GetEntityByWUID(wuid)
+    return horse
+end
+
+local function getHealthFactor(name)
     local maxHealth = 100
-    local currentHealth = KCDUtils.Player:GetHealth() or maxHealth
+    local currentHealth
+
+    if name == "player" then
+        currentHealth = KCDUtils.Player:GetHealth() or maxHealth
+    elseif name == "horse" then
+        local horse = getCurrentHorse()
+        if not horse then
+            return 1
+        end
+        currentHealth = horse.soul:GetState("health") or maxHealth
+        mod.Logger:Info("Current Horse Health: " .. tostring(currentHealth))
+    end
+
     if maxHealth <= 0 then return 1.0 end
 
     local ratio = currentHealth / maxHealth
-    return normalizeFactor(ratio, 2.0, 2.0, 0.2)
+    return normalizeFactor(ratio, 2.0, 3.0, 0.2)
 end
 
-local function getStaminaFactor()
-    local maxStamina = player.soul:GetDerivedStat("mst") or 100
-    local currentStamina = player.soul:GetState("stamina") or maxStamina
+local function getStaminaFactor(name)
+    local maxStamina
+    local currentStamina
+
+    if name == "player" then
+        maxStamina = player.soul:GetDerivedStat("mst") or 160
+        currentStamina = player.soul:GetState("stamina") or maxStamina
+    elseif name == "horse" then
+        local horse = getCurrentHorse()
+        if not horse then
+            return 1
+        end
+        maxStamina = horse.soul:GetDerivedStat("mst") or 160
+        currentStamina = horse.soul:GetState("health") or currentStamina
+        mod.Logger:Info("Current Horse Health: " .. tostring(currentStamina))
+    end
+
     if maxStamina <= 0 then return 1.0 end
 
     local ratio = currentStamina / maxStamina
-    return normalizeFactor(ratio, 2.5, 2.5, 0.2)
+    return normalizeFactor(ratio, 2.5, 3, 0.2)
 end
 
 local function getHungerFactor()
@@ -307,8 +342,8 @@ local function addPlayerFatigue()
       * getMountedFactor("player")
       * getWeightFactor()
       * getArmorFactor()
-      * getHealthFactor()
-      * getStaminaFactor()
+      * getHealthFactor("player")
+      * getStaminaFactor("player")
       * getHungerFactor()
       * getExhaustionFactor()
 
@@ -326,8 +361,8 @@ local function addHorseFatigue()
     local mountedFactor  = getMountedFactor("horse")
     local weightFactor   = getWeightFactor()
     local armorFactor    = getArmorFactor()
-    local healthFactor   = getHealthFactor()
-    local staminaFactor  = getStaminaFactor()
+    local healthFactor   = getHealthFactor("horse")
+    local staminaFactor  = getStaminaFactor("horse")
 
     local added = distanceContribution
                 * combatFactor
@@ -428,8 +463,16 @@ local function calcRecovery(hoursSlept, config)
 end
 
 function manager.AddActivity(activity)
-    local cfg = Fortitude.Config; if not cfg or not cfg.activities then return end
-    local amount = tonumber(cfg.activities[activity] or 0) or 0
+    local cfg = Fortitude.Config
+    if not cfg or not cfg.activities then return end
+
+    local data = cfg.activities[activity]
+    if not data then
+        Fortitude.Logger:Info(("[Fatigue] Unknown activity '%s'"):format(tostring(activity)))
+        return
+    end
+
+    local amount = tonumber(data.expense or 0) or 0
     if amount <= 0 then
         Fortitude.Logger:Info(("[Fatigue] No amount configured for activity '%s'"):format(tostring(activity)))
         return
@@ -443,6 +486,34 @@ function manager.AddActivity(activity)
 
     if Fortitude.SkillManager and Fortitude.SkillManager.AddXPFromFatigue then
         Fortitude.SkillManager.AddXPFromFatigue(amount)
+    end
+
+    local shouldPassTime =
+        activity == "washFace" or
+        activity == "herbGathering" or
+        activity:match("^butcher_")
+
+    if shouldPassTime then
+        local timeFactor = tonumber(data.time_factor or 1) or 1
+        local ratio = ((cfg.time and cfg.time.base_ratio) or 15) * timeFactor
+
+        Fortitude.Logger:Info(string.format(
+            "[Fatigue] Scheduling time pass for '%s' (factor %.2f, delay 2.5s)",
+            activity, timeFactor))
+
+        if Fortitude.StartSpeedup and Fortitude.EndSpeedup then
+            Fortitude.StartSpeedup(ratio)
+            Script.SetTimer(2500, function()
+                Fortitude.EndSpeedup()
+                Fortitude.Logger:Info(string.format("[Fatigue] Speedup finished for %s", activity))
+            end)
+        end
+
+        -- Variante B: alternativ echten Zeitsprung
+        -- Script.SetTimer(5000, function()
+        --     Fortitude.PassTime(cfg.time.base_hour * timeFactor)
+        --     Fortitude.Logger:Info(string.format("[Fatigue] Time passed: +%.2f hours for %s", timeFactor, activity))
+        -- end)
     end
 end
 
@@ -472,8 +543,10 @@ function manager.UpdateFatigue()
     -- local delta = config.travel.distanceDelta or 0
 
     -- if delta > 0 then
+    if manager.isMounted then
         addHorseFatigue()
-        addPlayerFatigue()
+    end
+    addPlayerFatigue()
     -- end
 
     mod.BuffManager.HandleFatigueBuff()

@@ -131,20 +131,77 @@ FortitudeConfig.defaultConfig = {
     },
     --#endregion
     -------------------------------------------------------------------
+    
+    -------------------------------------------------------------------
+    --#region TIME ----------------------------------------------
+    -------------------------------------------------------------------
+    time = {
+        base_ratio  = 15,
+        base_hour   = 3600
+    },
+    
+    --#endregion
+    -------------------------------------------------------------------
 
     -------------------------------------------------------------------
     --#region ACTIVITIES ----------------------------------------------
     -------------------------------------------------------------------
     activities = {
-        washArmor       = 3,
-        washFace        = 3,
-        repairArmor     = 6,
-        blacksmith      = 12,
-        alchemy         = 4,
-        herbGathering   = 0.5,
-        butcher_small    = 3,
-        butcher_medium   = 6,
-        butcher_large    = 9
+        washArmor = {
+            expense     = 9,
+            time_factor = 10,
+            timeout = 2500
+        },
+        washFace = {
+            expense     = 3,
+            time_factor = 10,
+            timeout = 3000,
+        },
+        repairArmor = {
+            expense     = 6,
+            time_factor = 5,
+            timeout = 2000,
+        },
+        blacksmith_small = {
+            expense     = 12,
+            time_factor = 10,
+            timeout = 180000,
+        },
+        blacksmith_medium = {
+            expense     = 18,
+            time_factor = 15,
+            timeout = 180000,
+        },
+        blacksmith_large = {
+            expense     = 24,
+            time_factor = 20,
+            timeout = 180000,
+        },
+        alchemy = {
+            expense     = 6,
+            time_factor = 8,
+            timeout = 120000,
+        },
+        herbGathering = {
+            expense     = 0.5,
+            time_factor = 2,
+            timeout = 2500,
+        },
+        butcher_small = {
+            expense     = 3,
+            time_factor = 10,
+            timeout = 2500,
+        },
+        butcher_medium = {
+            expense     = 6,
+            time_factor = 20,
+            timeout = 2500,
+        },
+        butcher_large = {
+            expense     = 9,
+            time_factor = 30,
+            timeout = 2500,
+        }
     },
     --#endregion
     -------------------------------------------------------------------

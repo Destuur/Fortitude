@@ -41,3 +41,16 @@ function Fortitude.DetectBedQuality(radius)
 
     return quality, factor
 end
+
+function Fortitude.StartSpeedup(ratio)
+  KCDUtils.Calendar.SetWorldTimeRatio(ratio)
+end
+
+function Fortitude.EndSpeedup()
+  KCDUtils.Calendar.SetWorldTimeRatio(15)
+end
+
+function Fortitude.PassTime(timespan)
+  local currentTime = KCDUtils.Calendar.GetWorldTime()
+  KCDUtils.Calendar.SetWorldTime(currentTime + timespan)
+end

@@ -107,7 +107,7 @@ function Fortitude:OnApseDialogEvent(elementName, instanceId, eventName, argTabl
   self.Logger:Info(("[ApseDialog] event=%s | element=%s | instance=%s")
     :format(tostring(eventName), tostring(elementName), tostring(instanceId)))
 
-  if type(FinishCrafting) ~= "function" or type(StartCrafting) ~= "function" then
+  if type(Fortitude.Activity.FinishCrafting) ~= "function" or type(Fortitude.Activity.StartCrafting) ~= "function" then
     self.Logger:Error("[ApseDialog] Activity helpers not loaded yet (Start/FinishCrafting)")
     return
   end
@@ -115,9 +115,9 @@ function Fortitude:OnApseDialogEvent(elementName, instanceId, eventName, argTabl
   local ev = tostring(eventName or ""):lower()
 
   if CONFIRM_LC[ev] then
-    return FinishCrafting(true)
+    return Fortitude.Activity.FinishCrafting(true)
   elseif CANCEL_LC[ev] then
-    return FinishCrafting(false)
+    return Fortitude.Activity.FinishCrafting(false)
   end
 
   local A = Fortitude.Activity
@@ -128,11 +128,11 @@ function Fortitude:OnApseDialogEvent(elementName, instanceId, eventName, argTabl
       A.dialogShows = (A.dialogShows or 0) + 1
       self.Logger:Info(("[ApseDialog] blacksmith OnShow #%d"):format(A.dialogShows))
       if A.dialogShows >= 2 then
-        return FinishCrafting(true)
+        return Fortitude.Activity.FinishCrafting(true)
       end
       return
     else
-      return FinishCrafting(true)
+      return Fortitude.Activity.FinishCrafting(true)
     end
   end
 end

@@ -10,7 +10,8 @@
     "EnvironmentModule",
     "UIAction",
     "Smithery",
-    "AlchemyTable"
+    "AlchemyTable",
+    "XGenAIModule"
   ],
   "Lua.diagnostics.disable": [
     "inject-field",
